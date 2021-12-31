@@ -20,6 +20,8 @@ userSchema.methods.setPassword = function(password) {
        //64 length and sha512 digest
        this.hash = crypto.pbkdf2Sync(password, this.salt, 
        1000, 64, `sha512`).toString(`hex`);
+       console.log(this.hash,this.salt);
+       return({hash:this.hash,salt:this.salt});
    };
      
    // Method to check the entered password is correct or not
