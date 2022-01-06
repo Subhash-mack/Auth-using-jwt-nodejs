@@ -88,7 +88,7 @@ module.exports = class AuthAdminController {
       let resetPassword=false;
       if(user.role!=='super' && user.lastLoginTime==null) resetPassword=true;
       await user.updateOne({lastLoginTime:new Date()});
-      res.status(200).json({user,resetPassword,auth:true});
+      res.status(200).json({user,resetPassword,auth:true,accessToken:token});
     } catch (err) {
       console.log(err);
     }

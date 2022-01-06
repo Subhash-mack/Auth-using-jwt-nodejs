@@ -13,7 +13,7 @@ router.route('/login')
 router.route('/logout')
     .get(auth,authController.logoutGET)
 router.route('/resetPassword')
-    .get(auth,resetPassword);
+    .post(auth,resetPassword);
     
 
 

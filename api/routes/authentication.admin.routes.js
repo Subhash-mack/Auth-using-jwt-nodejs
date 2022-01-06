@@ -12,7 +12,7 @@ router.route('/login')
 router.route('/logout')
     .get(auth,authAdminController.logoutGET)
 router.route('/resetPassword')
-    .get(auth,resetPassword);
+    .post(auth,resetPassword);
     
 
 

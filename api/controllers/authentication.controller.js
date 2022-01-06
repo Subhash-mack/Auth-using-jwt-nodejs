@@ -6,7 +6,7 @@ const createToken=require('./createToken');
 module.exports = class AuthController {
 
   static registerGET = async (req, res) => {
-    sendHi(res);
+    res.send('hi');
   }
   static registerPOST = async (req, res) => {
 
@@ -38,9 +38,9 @@ module.exports = class AuthController {
   
       user.token = token;
       res.status(201).json({
-        user,
+        success:true,
         message: "user added successfully",
-        token:token
+        accessToken:token
       });
     } catch (err) {
       console.log(err);
@@ -63,23 +63,25 @@ module.exports = class AuthController {
         email,
         password
       } = req.body;
+
       if (!(email && password)) return res.status(400).send({
         auth: false,
         message: "All input is required",
-        token: null
+        accessToken: null
       });
 
       const user = await userdb.findOne({
         email
       })
-      if (!user.validPassword(password)) return res.status(401).send({
+
+      if (!user || !user.validPassword(password)) return res.status(401).send({
         auth: false,
         message: "Invalid credentials",
-        token: null
+        accessToken: null
       });
       const token=createToken(user);
       user.token = token;
-      res.status(200).json(user);
+      res.status(200).send({accessToken:token,auth:true,message:"Logged in Successfully"});
     } catch (err) {
       console.log(err);
     }
