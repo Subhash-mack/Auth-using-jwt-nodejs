@@ -35,7 +35,8 @@ module.exports=class CartController{
                 else if (indexFound !== -1) {
                     cart.items[indexFound].quantity = cart.items[indexFound].quantity + quantity;
                     cart.items[indexFound].total = cart.items[indexFound].quantity * productDetails.price;
-                    cart.items[indexFound].price = productDetails.price
+                    cart.items[indexFound].price = productDetails.price;
+                    cart.items[indexFound].image=productDetails.image;
                     cart.subtotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
                 }
                 //----Check if quantity is greater than 0 then add item to items array ----
@@ -69,7 +70,8 @@ module.exports=class CartController{
                         productId: productId,
                         quantity: quantity,
                         total: parseInt(productDetails.price * quantity),
-                        price: productDetails.price
+                        price: productDetails.price,
+                        image:productDetails.image
                     }],
                     userId,
                     subtotal: parseInt(productDetails.price * quantity)
@@ -111,51 +113,78 @@ module.exports=class CartController{
         }
     }
 
-    static removeItemFromCart=async(req,res)=>{
+    // static removeItemFromCart=async(req,res)=>{
 
-        try{
-            const {productId}=req.body;
-            const userId=req.user._id;
-            let cart = await cartRepository.cart(userId);
-            let productDetails = await productRepository.productById(productId);
-                 if (!productDetails) {
-                return invalidRequest(res);
-            }
-            if(!cart) return invalidRequest(res);
+    //     try{
+    //         const {productId}=req.body;
+    //         console.log(req.params.id);
+    //         const userId=req.user._id;
+    //         let cart = await cartRepository.cart(userId);
+    //         let productDetails = await productRepository.productById(productId);
+    //              if (!productDetails) {
+    //             return invalidRequest(res);
+    //         }
+    //         if(!cart) return invalidRequest(res);
 
-            const indexFound = cart.items.findIndex(item => item.productId.id == productId);
-            if(indexFound===-1) return invalidRequest(res);
-            let existingProductTotal=cart.items[indexFound].total;
-            cart.items.splice(indexFound,1);
-            cart.subtotal-=existingProductTotal;
-            let data=await cart.save();
-            res.status(200).json({
-                    type: "success",
-                    mgs: "item removed from cart",
-                    data: data
-            });
-        }
-        catch(err){
-            console.log(err)
-            res.status(400).json({
-                type: "Invalid",
-                msg: "Something went wrong",
-                err: err
-            })
-        }
+    //         const indexFound = cart.items.findIndex(item => item.productId.id == productId);
+    //         if(indexFound===-1) return invalidRequest(res);
+    //         let data=await cart.save();
+    //         res.status(200).json({
+    //                 type: "success",
+    //                 mgs: "item removed from cart",
+    //                 data: data
+    //         });
+    //     }
+    //     catch(err){
+    //         console.log(err)
+    //         res.status(400).json({
+    //             type: "Invalid",
+    //             msg: "Something went wrong",
+    //             err: err
+    //         })
+    //     }
 
         
-    }
+    // }
 
     static reduceProductQuantity =async(req,res)=>{
+
+        try{
         const {productId}=req.body;
-        const quantity = Number.parseInt(req.body.quantity);
-        let cart = await cartRepository.cart();
+        const userId=req.user._id;
+        let cart = await cartRepository.cart(userId);
         let productDetails = await productRepository.productById(productId);
              if (!productDetails) {
             return invalidRequest(res);
         }
         if(!cart) return invalidRequest(res);
+        const indexFound = cart.items.findIndex(item => item.productId.id == productId);
+        if(indexFound===-1) return invalidRequest(res);
+        if(cart.items[indexFound].quantity===1){
+            let existingProductTotal=cart.items[indexFound].total;
+            cart.items.splice(indexFound,1);
+            cart.subtotal-=existingProductTotal;
+        }
+        else{
+        cart.items[indexFound].total-=cart.items[indexFound].price;
+        cart.items[indexFound].quantity-=1;
+        cart.subtotal-=cart.items[indexFound].price;
+        }
+        let data=await cart.save();
+        res.status(200).json({
+                type: "success",
+                mgs: "item quantity reduced by 1",
+                data: data
+        });
+    }
+    catch(err){
+        console.log(err)
+        res.status(400).json({
+            type: "Invalid",
+            msg: "Something went wrong",
+            err: err
+        })
+    }
 
 
 
